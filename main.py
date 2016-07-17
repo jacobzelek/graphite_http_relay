@@ -2,12 +2,22 @@ from flask import Flask, request
 import json
 import socket
 import urllib2
+from functools import wraps
 
 app = Flask(__name__)
 
 API_KEYS = {}
 
 CARBON_SOCKET = None
+
+
+def requires_auth_key(func):
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        if request.args.get("api_key", None) not in API_KEYS:
+            return "Unauthorized", 401
+        return func(*args, **kwargs)
+    return wrapped
 
 
 def connect_to_carbon():
@@ -21,29 +31,21 @@ def close_carbon():
 
 @app.route('/metrics', methods=["POST"])
 def post_metric():
-    if request.args.get("api_key", None) in API_KEYS:
-        try:
-            CARBON_SOCKET.send(request.body)
-        except:
-            connect_to_carbon()
-            CARBON_SOCKET.send(request.body)
-        
-        return "OK", 200
-
-    return "Unauthorized", 401
+    try:
+        CARBON_SOCKET.send(request.body)
+    except:
+        connect_to_carbon()
+        CARBON_SOCKET.send(request.body)
+    
+    return "OK", 200
 
 
 @app.route('/events', methods=["POST"])
 def post_event():
-    if request.args.get("api_key", None) in API_KEYS:
-        req = urllib2.Request('http://127.0.0.1:8080/events',
-            data=request.body, headers={'Content-type': 'text/plain'})
-        
-        r = urllib2.urlopen(req)
-        
-        return "OK", 200
-
-    return "Unauthorized", 401
+    req = urllib2.Request('http://127.0.0.1:8080/events', data=request.body, headers={'Content-type': 'text/plain'})
+    urllib2.urlopen(req)
+    
+    return "OK", 200
 
 if __name__ == "__main__":
     API_KEYS = json.load(open("config.json", "r"))["api_keys"]
