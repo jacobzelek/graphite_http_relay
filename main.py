@@ -18,7 +18,7 @@ def requires_auth_key(func):
     return wrapped
 
 
-@app.route('/metrics', methods=["POST"])
+@app.route('/carbon/metrics', methods=["POST"])
 @requires_auth_key
 def post_metric():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,7 +29,7 @@ def post_metric():
     return "OK", 200
 
 
-@app.route('/events', methods=["POST"])
+@app.route('/carbon/events', methods=["POST"])
 @requires_auth_key
 def post_event():
     req = urllib2.Request('http://127.0.0.1:8080/events', data=request.data, headers={'Content-type': 'text/plain'})
