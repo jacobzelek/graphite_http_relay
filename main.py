@@ -1,6 +1,7 @@
 from flask import Flask, request
 import json
 import socket
+import urllib2
 
 app = Flask(__name__)
 
@@ -31,11 +32,24 @@ def post_metric():
 
     return "Unauthorized", 401
 
+
+@app.route('/events', methods=["POST"])
+def post_event():
+    if request.args.get("api_key", None) in API_KEYS:
+        req = urllib2.Request('http://127.0.0.1:8080/events',
+            data=request.body, headers={'Content-type': 'text/plain'})
+        
+        r = urllib2.urlopen(req)
+        
+        return "OK", 200
+
+    return "Unauthorized", 401
+
 if __name__ == "__main__":
     API_KEYS = json.load(open("config.json", "r"))["api_keys"]
 
     connect_to_carbon()
 
-    app.run(debug=True, use_reloader=False, host="127.0.0.1", port=8081, threaded=True)
+    app.run(debug=False, use_reloader=False, host="127.0.0.1", port=8081, threaded=True)
 
     close_carbon()
