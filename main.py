@@ -23,7 +23,7 @@ def requires_auth_key(func):
 def post_metric():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("127.0.0.1", 2003))
-    s.send(request.body)
+    s.send(request.data)
     s.close()
     
     return "OK", 200
@@ -32,7 +32,7 @@ def post_metric():
 @app.route('/events', methods=["POST"])
 @requires_auth_key
 def post_event():
-    req = urllib2.Request('http://127.0.0.1:8080/events', data=request.body, headers={'Content-type': 'text/plain'})
+    req = urllib2.Request('http://127.0.0.1:8080/events', data=request.data, headers={'Content-type': 'text/plain'})
     urllib2.urlopen(req)
     
     return "OK", 200
