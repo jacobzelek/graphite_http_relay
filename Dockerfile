@@ -2,9 +2,14 @@ FROM python:2.7.11
 
 MAINTAINER Jacob Zelek <jacob.zelek@gmail.com>
 
-ENV KEYS /config.json
+ADD config.json .
+ADD main.py .
+ADD nginx.conf .
+ADD requirements.txt .
+ADD supervisor.conf .
+ADD uwsgi.ini .
+ADD uwsgi_params .
 
-COPY . /
 WORKDIR /
 
 RUN apt-get update
